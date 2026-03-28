@@ -1,0 +1,19 @@
+model: claude-3-5-haiku-20241022
+max_tokens: 10
+
+simple_keywords:
+  - 我的资产
+  - 持仓
+  - 余额
+  - 账户
+  - 股价
+  - 涨跌幅
+
+classification_prompt: |
+  Classify this financial query as SIMPLE or COMPLEX.
+  SIMPLE = factual lookups (price, balance, holdings)
+  COMPLEX = analysis, comparison, prediction, multi-step reasoning
+
+  Query: {query}
+
+  Respond with only "SIMPLE" or "COMPLEX".
