@@ -1,0 +1,4 @@
+provider: dashscope
+model: text-embedding-v4
+base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+api_key_env: DASHSCOPE_API_KEY
