@@ -12,7 +12,7 @@ _embed_cfg = None
 def _load_embed_cfg():
     global _embed_cfg
     if _embed_cfg is None:
-        cfg_path = Path(__file__).parents[2] / "config" / "embedding.yaml"
+        cfg_path = Path(__file__).parents[1] / "config" / "embedding.yaml"
         with open(cfg_path) as f:
             _embed_cfg = yaml.safe_load(f)
     return _embed_cfg
@@ -51,7 +51,7 @@ def create_schema(client: weaviate.WeaviateClient):
         return
     client.collections.create(
         name="FinancialDocument",
-        vectorizer_config=wvc.config.Configure.Vectorizer.none(),
+        vector_config=wvc.config.Configure.Vectors.none(),
         properties=[
             wvc.config.Property(name=name, data_type=wvc.config.DataType.TEXT)
             for name in ["title", "content", "doc_type", "ticker", "date"]

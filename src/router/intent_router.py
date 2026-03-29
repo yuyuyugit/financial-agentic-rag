@@ -30,8 +30,8 @@ class IntentRouter:
 
     def route(self, query: str) -> QueryType:
         # Check for simple keywords
-        if any(keyword in query for keyword in self.simple_keywords):
-            return QueryType.SIMPLE
+        # if any(keyword in query for keyword in self.simple_keywords):
+        #     return QueryType.SIMPLE
 
         # Use Qwen Flash to classify
         message = self.client.chat.completions.create(

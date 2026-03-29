@@ -6,6 +6,8 @@ from langchain_core.messages import ToolMessage
 from langgraph.graph import END
 from .state import AgentState
 from src.tools import all_tools
+from src.retrieval import hybrid_search
+from src.retrieval.weaviate_client import get_client, create_schema
 
 config_path = Path(__file__).parent.parent / "config" / "agent.yaml"
 with open(config_path) as f:
@@ -58,11 +60,11 @@ def tool_node(state: AgentState) -> dict:
 
 
 def retrieve_node(state: AgentState) -> dict:
-    """Retrieve documents (placeholder)."""
-    return {
-        "retrieved_docs": [{"content": f"Mock document for: {state['query']}", "source": "mock"}],
-        "intent": "generate"
-    }
+    """Retrieve documents via hybrid search."""
+    client = get_client()
+    create_schema(client)
+    docs = hybrid_search(client, state["query"])
+    return {"retrieved_docs": docs, "intent": "generate"}
 
 
 def generate_node(state: AgentState) -> dict:
