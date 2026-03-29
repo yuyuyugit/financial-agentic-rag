@@ -2,8 +2,14 @@ import os
 import weaviate
 from fastapi import FastAPI
 from pydantic import BaseModel
+from src.router import IntentRouter
+from src.agent.graph import run_agent
+from src.retrieval.keyword_search import KeywordSearcher
 
 app = FastAPI(title="Financial Agentic RAG API")
+
+router = IntentRouter()
+searcher = KeywordSearcher()
 
 
 @app.get("/")
@@ -33,4 +39,14 @@ class ChatRequest(BaseModel):
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    return {"answer": "not implemented", "query_type": "unknown"}
+    try:
+        query_type = router.route(req.query)
+
+        if query_type == "SIMPLE":
+            result = searcher.search(req.query)
+            return {"answer": result["result"], "query_type": "simple", "source": "keyword_search"}
+        elif query_type == "COMPLEX":
+            answer = run_agent(req.query)
+            return {"answer": answer, "query_type": "complex", "source": "agent"}
+    except Exception as e:
+        return {"answer": f"Error: {str(e)}", "query_type": "error"}

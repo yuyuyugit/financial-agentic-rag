@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 import yaml
-import anthropic
+from openai import OpenAI
 
 
 class QueryType(Enum):
@@ -11,8 +11,11 @@ class QueryType(Enum):
 
 class IntentRouter:
     def __init__(self, api_key: str = None, config_path: str = None):
-        self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
-        self.client = anthropic.Anthropic(api_key=self.api_key)
+        self.api_key = api_key or os.getenv("DASHSCOPE_API_KEY")
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        )
 
         if config_path is None:
             config_path = os.path.join(os.path.dirname(__file__), "..", "config", "router_config.yaml")
@@ -30,8 +33,8 @@ class IntentRouter:
         if any(keyword in query for keyword in self.simple_keywords):
             return QueryType.SIMPLE
 
-        # Use Claude Haiku to classify
-        message = self.client.messages.create(
+        # Use Qwen Flash to classify
+        message = self.client.chat.completions.create(
             model=self.model,
             max_tokens=self.max_tokens,
             messages=[
@@ -42,5 +45,5 @@ class IntentRouter:
             ]
         )
 
-        response_text = message.content[0].text.strip().upper()
+        response_text = message.choices[0].message.content.strip().upper()
         return QueryType.SIMPLE if "SIMPLE" in response_text else QueryType.COMPLEX

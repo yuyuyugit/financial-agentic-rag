@@ -115,10 +115,15 @@ docker-compose build --no-cache
 
 # 进入容器终端
 docker exec -it financial-backend /bin/bash
+docker exec financial-agentic-rag-backend-1 bash -c "cd /app && ./scripts/check_phase2.sh"
 
 # 查看运行中的容器
 docker ps
 ```
+git status
+git add .
+git commit -m "..."
+git push origin main
 
 ---
 
@@ -147,7 +152,9 @@ Phase 4	工具调用（股价、新闻、持仓）	P1
 Phase 5	工业化文档	P2
 Phase 6	完善打磨（README、示例数据）	P2
 各阶段独立 Prompts
+
 Phase 0 — 基础设施
+
 P0-A: Docker + 依赖配置
 
 
@@ -167,6 +174,7 @@ Create the following files for a Python FastAPI + Weaviate + Streamlit project:
 5. `.env.example`: ANTHROPIC_API_KEY=your-anthropic-api-key, WEAVIATE_URL=http://weaviate:8080, LOG_LEVEL=INFO
 
 6. `.gitignore`: .env, __pycache__, .DS_Store, *.pyc, weaviate_data/, .vscode/, .idea/
+
 P0-B: FastAPI 入口
 
 
@@ -178,7 +186,9 @@ Create `src/api/main.py` for a FastAPI application:
 - POST /chat → accepts {"query": str}, returns {"answer": "not implemented", "query_type": "unknown"} as placeholder
 
 Also create `src/__init__.py` and `src/api/__init__.py` as empty files.
+
 Phase 1 — Router
+
 P1-A: QueryType + IntentRouter
 
 
@@ -189,13 +199,13 @@ Requirements:
 - Define simple query keywords: ["我的资产", "持仓", "余额", "账户", "股价", "涨跌幅"]
 - Class `IntentRouter` with method `route(query: str) -> QueryType`:
   - First check if any keyword appears in query → return SIMPLE
-  - Otherwise call OpenAI (model gpt-4o-mini) with a prompt asking to classify the query as SIMPLE or COMPLEX for a financial assistant
+  - Otherwise call Claude Haiku with a prompt asking to classify the query as SIMPLE or COMPLEX for a financial assistant
   - SIMPLE = factual lookups (price, balance, holdings)
   - COMPLEX = analysis, comparison, prediction, multi-step reasoning
   - Parse LLM response and return QueryType
-- Constructor takes `api_key: str = None` (falls back to OPENAI_API_KEY env var)
-
+- Constructor takes `api_key: str = None` 
 Also create `src/router/__init__.py` exporting `IntentRouter` and `QueryType`.
+
 P1-B: 关键词检索
 
 
@@ -212,7 +222,9 @@ Requirements:
   - 余额: "可用余额：¥50,000.00"
 
 Also create `src/retrieval/__init__.py`.
+
 Phase 2 — Agent (LangGraph)
+
 P2-A: Agent State
 
 
@@ -230,12 +242,13 @@ Requirements:
   - iteration_count: int                     # prevent infinite loops
 
 Also create `src/agent/__init__.py`.
+
 P2-B: Agent Nodes
 
 
 Create `src/agent/nodes.py` for a LangGraph financial agent.
 
-Use langchain_openai.ChatOpenAI (model gpt-4o-mini, from OPENAI_API_KEY env).
+Use langchain_anthropic.ChatAnthropic (model claude-3-5-haiku-20241022, from ANTHROPIC_API_KEY env).
 
 Implement these functions, each takes `state: AgentState` and returns `dict` (partial state update):
 
@@ -248,6 +261,7 @@ Implement these functions, each takes `state: AgentState` and returns `dict` (pa
 4. `should_continue(state) -> str`: Return "retrieve" if intent=="retrieve", "generate" if intent=="generate", END if intent=="done" or iteration_count>3
 
 Import AgentState from .state. Import END from langgraph.graph.
+
 P2-C: LangGraph Graph
 
 
@@ -265,6 +279,7 @@ Requirements:
   - Add conditional edge from "generate" using should_continue → {END: END, "retrieve": "retrieve"}
 - Compile and export as `agent_graph = graph.compile()`
 - Export `run_agent(query: str) -> str` function that invokes the graph with initial state and returns final_answer
+
 P2-D: 集成 Agent 到 API
 
 
@@ -281,7 +296,11 @@ Update POST /chat:
   - If SIMPLE: call searcher.search(query), return {"answer": result["result"], "query_type": "simple", "source": "keyword_search"}
   - If COMPLEX: call run_agent(query), return {"answer": answer, "query_type": "complex", "source": "agent"}
 - Add error handling: return {"answer": f"Error: {str(e)}", "query_type": "error"}
+
+llm changed to qwen
+
 Phase 3 — Weaviate 混合检索
+
 P3-A: Weaviate 客户端 + Schema
 
 

@@ -5,3 +5,4 @@ __pycache__/
 weaviate_data/
 .vscode/
 .idea/
+scripts/

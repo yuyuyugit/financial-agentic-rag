@@ -1,0 +1,17 @@
+model:
+  provider: qwen
+  analyze: qwen-turbo
+  generate: qwen-max
+  temperature: 0.7
+
+agent:
+  max_iterations: 3
+  timeout: 30
+
+nodes:
+  analyze:
+    system_prompt: "You are a financial analyst. Analyze the query and decide next action: retrieve_docs or generate_answer."
+  retrieve:
+    type: placeholder
+  generate:
+    type: llm
