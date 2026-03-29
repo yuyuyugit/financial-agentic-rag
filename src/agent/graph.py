@@ -1,22 +1,24 @@
 from langgraph.graph import StateGraph, END
 from .state import AgentState
-from .nodes import analyze_node, retrieve_node, generate_node, should_continue
+from .nodes import analyze_node, retrieve_node, generate_node, tool_node, should_continue
 
 graph = StateGraph(AgentState)
 
 graph.add_node("analyze", analyze_node)
 graph.add_node("retrieve", retrieve_node)
 graph.add_node("generate", generate_node)
+graph.add_node("tool", tool_node)
 
 graph.set_entry_point("analyze")
 
 graph.add_conditional_edges(
     "analyze",
     should_continue,
-    {"retrieve": "retrieve", "generate": "generate", END: END}
+    {"retrieve": "retrieve", "generate": "generate", "tool": "tool", END: END}
 )
 
 graph.add_edge("retrieve", "generate")
+graph.add_edge("tool", "generate")
 
 graph.add_conditional_edges(
     "generate",
@@ -27,12 +29,12 @@ graph.add_conditional_edges(
 agent_graph = graph.compile()
 
 
-def run_agent(query: str) -> str:
+def run_agent(query: str, intent: str = "") -> str:
     """Run the agent with the given query and return the final answer."""
     initial_state = {
         "messages": [],
         "query": query,
-        "intent": "",
+        "intent": intent,
         "retrieved_docs": [],
         "tool_calls": [],
         "final_answer": "",

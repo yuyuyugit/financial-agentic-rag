@@ -2,8 +2,10 @@ import os
 import yaml
 from pathlib import Path
 from langchain_openai import ChatOpenAI
+from langchain_core.messages import ToolMessage
 from langgraph.graph import END
 from .state import AgentState
+from src.tools import all_tools
 
 config_path = Path(__file__).parent.parent / "config" / "agent.yaml"
 with open(config_path) as f:
@@ -27,15 +29,32 @@ llm_generate = ChatOpenAI(
 )
 
 
+_llm_with_tools = llm_analyze.bind_tools(all_tools)
+
+
 def analyze_node(state: AgentState) -> dict:
     """Analyze query and decide next action."""
+    if state.get("intent"):
+        return {}
     system_prompt = config["nodes"]["analyze"]["system_prompt"]
-    response = llm_analyze.invoke([
+    response = _llm_with_tools.invoke([
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": state["query"]}
     ])
+    if response.tool_calls:
+        return {"intent": "tool_call", "tool_calls": response.tool_calls}
     intent = "retrieve_docs" if "retrieve" in response.content.lower() else "generate_answer"
     return {"intent": intent}
+
+
+def tool_node(state: AgentState) -> dict:
+    """Execute tool calls and return results as messages."""
+    tool_map = {t.name: t for t in all_tools}
+    messages = list(state.get("messages", []))
+    for tc in state["tool_calls"]:
+        result = tool_map[tc["name"]].invoke(tc["args"])
+        messages.append(ToolMessage(content=str(result), tool_call_id=tc["id"]))
+    return {"messages": messages, "intent": "generate"}
 
 
 def retrieve_node(state: AgentState) -> dict:
@@ -57,7 +76,9 @@ def generate_node(state: AgentState) -> dict:
 
 def should_continue(state: AgentState) -> str:
     """Determine next node or end."""
-    if state["intent"] == "retrieve_docs":
+    if state["intent"] == "tool_call":
+        return "tool"
+    elif state["intent"] == "retrieve_docs":
         return "retrieve"
     elif state["intent"] == "generate_answer":
         return "generate"

@@ -59,7 +59,7 @@ if user_input:
             response = requests.post(
                 f"{BACKEND_URL}/chat",
                 json={"query": user_input},
-                timeout=30
+                timeout=60
             )
             response.raise_for_status()
             data = response.json()
