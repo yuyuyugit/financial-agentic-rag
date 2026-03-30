@@ -4,6 +4,8 @@
 
 A cost-optimized financial RAG system using LangGraph and Weaviate with a tiered LLM architecture. Routes simple queries to keyword search and complex queries through an agentic pipeline with hybrid retrieval, tool calling, and source citations.
 
+![Financial Agentic RAG demo](./image/demo.png)
+
 ## 🏠 Architecture
 
 ```
