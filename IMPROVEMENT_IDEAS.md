@@ -14,7 +14,6 @@ Streaming in the generate node will reduce perceived latency from ~30s to first-
 
 Run multiple tool calls in parallel using asyncio.gather instead of sequentially. This distributed parallel approach significantly reduces latency by executing independent tool calls concurrently, rather than waiting for each to complete one after another.
 
----
 
 ## 2. Better Prompts
 
@@ -30,13 +29,11 @@ Using explicit JSON schema instructions in prompts ensures consistent, parseable
 
 For system prompts and static financial context — such as fixed glossaries, tool descriptions, and domain-specific instructions — prompt caching can be used to reduce costs by approximately 90% on repeated calls. This is particularly effective in financial RAG systems where the same context is reused across multiple user interactions.
 
----
 
 ## 3. Re-ranking
 
 To enhance the quality of retrieved context without modifying the underlying LLM, a cross-encoder re-ranker (e.g., `bge-reranker`) can be inserted between the retrieval and generation stages. Unlike bi-encoder retrievers used in vector search, cross-encoders jointly process the query and each candidate document, producing more accurate relevance scores. This re-ranking step ensures that only the most semantically relevant documents are passed to the LLM for final answer generation, improving both accuracy and faithfulness of responses.
 
----
 
 ## 4. Metadata Filtering for Permission Layering
 
@@ -50,13 +47,11 @@ This approach is essential in the financial industry, where customer information
 User Role → Permission Level → Metadata Filter → Filtered Retrieval Results
 ```
 
----
 
 ## 5. Source Citations in Generated Answers
 
 Surface the retrieved document metadata (title, date, source) alongside the generated answer so users can verify claims.
 
----
 
 ## 6. Evaluation Pipeline
 
