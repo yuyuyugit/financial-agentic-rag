@@ -185,3 +185,7 @@ def my_tool(param: str) -> str:
 ```python
 TOOLS = [my_tool]
 ```
+
+## 📈 Further Improvement
+
+For detailed improvement ideas please refer to [`IMPROVEMENT_IDEAS.md`](./IMPROVEMENT_IDEAS.md).
