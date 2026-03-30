@@ -95,13 +95,11 @@ LOG_LEVEL=INFO
 
 ### Basic Usage
 
-```python
-from src.agent import FinancialAgent
-
-agent = FinancialAgent()
-response = agent.query("What is Apple's revenue trend?")
-print(response)
+```bash
+docker-compose build --no-cache
+docker-compose up -d
 ```
+Open http://localhost:8501
 
 ## ⚙️ Configuration
 
@@ -167,10 +165,10 @@ financial-agentic-rag/
 
 ## 📊 Performance
 
-| Scenario | Model | Latency |
-|----------|-------|---------|
-| Simple query | qwen-turbo (keyword) | ~200ms |
-| Complex query | qwen-max (generate) | ~30s |
+|   Scenario    |        Model         | Latency |
+|---------------|----------------------|---------|
+| Simple query  | qwen-turbo (keyword) |  ~200ms |
+| Complex query | qwen-max (generate)  |   ~30s  |
 
 ## 🔧 Development
 
